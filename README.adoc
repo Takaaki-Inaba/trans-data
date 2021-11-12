@@ -1,0 +1,61 @@
+:lang: ja
+:doctype: article
+:nofooter:
+:hardbreaks-option:
+
+= ソケットプログラミング課題
+ネットワーク上のマシンAからマシンBへ、ソケット経由でファイル転送を行うプログラムを作成せよ
+
+== 仕様
+
+=== usage
+サーバ起動
+trans-data-server -p port [-s files-store-directory] [-d]
+-p: 起動ポート番号
+-s: 転送されたファイルを格納するディレクトリのパス
+-d: デバッグモードを有効にする
+
+サーバ停止
+trans-data-server -t
+
+クライアント起動
+trans-data-client -h hostname -p port -f filename [-d]
+-h: サーバのホスト名 or IP address
+-p: サーバが起動しているポート番号
+-f: 転送するファイルのパス
+-d: デバッグモードを有効にする
+
+
+=== デバッグモード
+デバッグモードを有効にした場合は、実行ログをファイルに出力する。
+出力ファイル名は、以下とする。
+
+.デバッグログファイル名
+[cols="1,3", options="header"]
+|===
+|
+|ファイル名
+
+|サーバ
+|trans-data-server.pid
+
+|クライアント
+|trans-data-client.pid
+|===
+
+
+出力フォーマットは以下のように先頭からLINEまでをヘッダとし、ここは90バイトの左詰め。
+また、ヘッダ+メッセージを合わせて512バイトにする。
+
+----
+yyyy/mm/dd HH/MM/SS.nsec thread_id FILENAME:LINE message
+----
+
+
+=== マルチクライアント対応
+マルチスレッドにより実現
+
+=== タイムアウト
+受信タイムアウトを実装
+
+
