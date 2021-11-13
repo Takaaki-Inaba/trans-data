@@ -1,0 +1,63 @@
+#include <stdio.h>
+#include <stdarg.h>
+#include <pthread.h>
+#include <time.h>
+
+#include "debug.h"
+
+#define DEBUG_LOG_MESSAGE_LENGTH 512
+#define DEBUG_LOG_HEADER_LENGTH 90
+
+static enum debug_mode g_debug_mode = DEBUG_OFF;
+static const char *g_filename;
+static int g_line_number;
+static pthread_mutex_t debug_mtx = PTHREAD_MUTEX_INITIALIZER;
+
+void set_debug_mode(enum debug_mode mode)
+{
+	g_debug_mode = mode;
+}
+
+enum debug_mode get_debug_mode(void)
+{
+	return g_debug_mode;
+}
+
+void debug_mutex_lock(void)
+{
+	pthread_mutex_lock(&debug_mtx);
+}
+
+void debug_mutex_unlock(void)
+{
+	pthread_mutex_unlock(&debug_mtx);
+}
+
+void set_filename_and_line(const char *filename, int line)
+{
+	g_filename = filename;
+	g_line_number = line;
+}
+
+void debug_print_internal(const char *format, ...)
+{
+	va_list ap;
+	struct timespec ts;
+	struct tm tm;
+	char message[DEBUG_LOG_MESSAGE_LENGTH + 1] = { 0 };
+	char header[DEBUG_LOG_HEADER_LENGTH + 1] = { 0 };
+
+	/* 現在時刻取得 */
+	clock_gettime(CLOCK_REALTIME, &ts);
+	localtime_r(&ts.tv_sec, &tm);
+
+	va_start(ap, format);
+	vsnprintf(message, sizeof(message), format, ap);
+	va_end(ap);
+
+	snprintf(header, sizeof(header), "%d/%02d/%02d %02d:%02d:%02d.%06ld %lu %s:%d",
+		tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec,
+		(unsigned long)pthread_self(), g_filename, g_line_number);
+	printf("%*s %s\n", -DEBUG_LOG_HEADER_LENGTH, header, message);
+}
+
