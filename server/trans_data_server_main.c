@@ -20,6 +20,7 @@ int trans_data_server_main(int argc, char *argv[])
 	// create_server
 
 	// create_client_communication_manager
+	// managerは別スレッドで起動する。client_socketを受け取って、workerを作成する
 
 	// for
 	// client_socket = sever->accept()
@@ -30,7 +31,7 @@ int trans_data_server_main(int argc, char *argv[])
 
 	// ]
 
-	// ccm->join
+	// ccm->terminate
 }
 
 
