@@ -8,19 +8,20 @@
 #define DEBUG_LOG_MESSAGE_LENGTH 512
 #define DEBUG_LOG_HEADER_LENGTH 90
 
+enum debug_mode {
+	DEBUG_OFF,
+	DEBUG_ON,
+};
+
 static enum debug_mode g_debug_mode = DEBUG_OFF;
 static const char *g_filename;
 static int g_line_number;
 static pthread_mutex_t debug_mtx = PTHREAD_MUTEX_INITIALIZER;
+static FILE *g_log_file_ptr;
 
-void set_debug_mode(enum debug_mode mode)
+int is_enable_debug(void)
 {
-	g_debug_mode = mode;
-}
-
-enum debug_mode get_debug_mode(void)
-{
-	return g_debug_mode;
+	return g_debug_mode == DEBUG_ON;
 }
 
 void debug_mutex_lock(void)
@@ -58,6 +59,20 @@ void debug_print_internal(const char *format, ...)
 	snprintf(header, sizeof(header), "%d/%02d/%02d %02d:%02d:%02d.%06ld %lu %s:%d",
 		tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec,
 		(unsigned long)pthread_self(), g_filename, g_line_number);
-	printf("%*s %s\n", -DEBUG_LOG_HEADER_LENGTH, header, message);
+	fprintf(g_log_file_ptr, "%*s %s\n", -DEBUG_LOG_HEADER_LENGTH, header, message);
 }
 
+/** デバッグ初期化処理. */
+int debug_initialize(const char *log_filename)
+{
+	if ((g_log_file_ptr = fopen(log_filename, "a")) == NULL) {
+		return -1;
+	}
+	return 0;
+}
+
+/** デバッグ終了処理 */
+void debug_finalize()
+{
+	fclose(g_log_file_ptr);
+}

@@ -11,9 +11,6 @@ trans-data-server -p port [-s files-store-directory] [-d]
 -s: 転送されたファイルを格納するディレクトリのパス
 -d: デバッグモードを有効にする
 
-サーバ停止
-trans-data-client -t
-
 ファイル転送
 trans-data-client -h hostname -p port -f filename [-d]
 -h: サーバのホスト名 or IP address
@@ -23,7 +20,7 @@ trans-data-client -h hostname -p port -f filename [-d]
 
 
 == デバッグモード
-デバッグモードを有効にした場合は、サーバは実行ログを「trans-data-server.pid」に出力する。
+デバッグモードを有効にした場合は、サーバは起動したカレントディレクトリに実行ログ「trans-data-server.pid」を作成する。
 クライアントは標準出力にログを出力する。
 サーバはデーモン化する関係で制御端末を切り離すためファイル出力により対応するが、
 クライアントはデーモン化しないのとユーザビリティの観点から標準出力にログを出力する。
@@ -47,11 +44,6 @@ yyyy/mm/dd HH/MM/SS.nsec thread_id FILENAME:LINE message
 受信完了後は、ロックファイルは削除する。
 ロックを取得できなかった場合は、クライアント側にエラーを返し終了する。
 
-
-== 終了処理
-クライアントから終了メッセージを受け取った場合、サーバは終了フラグを立ててクライアントに返答する。
-実際の終了は、すべてのクライアントが通信を終えた後。
-
 == メッセージシーケンス
 
 == タイムアウト
@@ -66,8 +58,7 @@ yyyy/mm/dd HH/MM/SS.nsec thread_id FILENAME:LINE message
 クライアントからサーバへの通信確立を行う際のタイムアウト。
 外部ファイルからユーザが任意に設定できるのが理想ではあるが、今回は簡略化のため「20秒」の固定値とする。 
 
-== シグナルの扱い
 
-
-
+= issue
+https://github.com/Takaaki-Inaba/trans-data/issues
 

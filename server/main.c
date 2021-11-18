@@ -1,4 +1,4 @@
-#include "trans_data_server_main.h"
+#include "server_main.h"
 
 int main(int argc, char *argv[])
 {
