@@ -84,7 +84,7 @@ int send_message_F(int sock, const char *file_path)
 		debug_perror("stat");
 		goto error;
 	}
-	msg.file_size = htobe64(sb.st_size);
+	msg.file_size = htobe64((uint64_t)sb.st_size);
 	p = strdup(file_path);
 	snprintf(msg.filename, sizeof(msg.filename), "%s", basename(p));
 

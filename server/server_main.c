@@ -12,6 +12,7 @@
 #include "../common/debug.h"
 #include "server_main.h"
 #include "client_acceptor.h"
+#include "communicate_client.h"
 
 struct trans_data_server_option {
 #define PORT_NUMBER_MAX_LEN 5
@@ -117,12 +118,16 @@ int trans_data_server_main(int argc, char *argv[])
 		goto end;
 	}
 
-	// for
-	// connected_socket = client_acceptor->accept()
+	for (;;) {
+		int connected_socket;
 
-	// clients_manager->create_client_communicator(client_socket)
-
-	// ]
+		if ((connected_socket = client_acceptor->accept(client_acceptor)) == -1) {
+			continue;
+		}
+		if (start_communicate_client(connected_socket)) {
+			continue;
+		}
+	}
 
 end:
 	return 0;

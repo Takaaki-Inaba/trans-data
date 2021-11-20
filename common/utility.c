@@ -17,7 +17,7 @@ int set_recv_timeout(int sock, int timeout_sec)
 	return 0;
 }
 
-int set_break_connection(int sock)
+int prepare_break_connection(int sock)
 {
 	struct linger l;
 

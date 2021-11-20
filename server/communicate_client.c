@@ -35,7 +35,7 @@ static int terminate_session(int connected_socket, const char *message)
 	return 0;
 
 error:
-	set_break_connection(connected_socket);
+	prepare_break_connection(connected_socket);
 	return -1;
 }
 
@@ -49,7 +49,34 @@ static int reply_acknowledge(int connected_socket)
 	return 0;
 
 error:
-	set_break_connection(connected_socket);
+	prepare_break_connection(connected_socket);
+	return -1;
+}
+
+static int recv_file(int connected_socket, int output_fd, uint64_t send_file_size)
+{
+	char buf[BUFSIZ];
+	ssize_t recv_size, n;
+	uint64_t total_recv_size = 0;
+
+	while ((recv_size = recv(connected_socket, buf, sizeof(buf), 0)) > 0) {
+		if ((n = write(output_fd, buf, recv_size)) == -1) {
+			debug_perror("write");
+			goto error;
+		}
+		total_recv_size += recv_size;
+	}
+	if (recv_size == -1) {
+		debug_perror("recv");
+		goto error;
+	}
+	if (total_recv_size != send_file_size) {
+		debug_print("send file size %lld but receive file size %lld", send_file_size, total_recv_size);
+		goto error;
+	}
+	return 0;
+
+error:
 	return -1;
 }
 
@@ -68,7 +95,7 @@ static int initialize_session(int connected_socket, char *filename, uint64_t *fi
 	return 0;
 
 error:
-	set_break_connection(connected_socket);
+	prepare_break_connection(connected_socket);
 	return -1;
 }
 
@@ -86,7 +113,7 @@ static int open_output_file(const char *filename)
 		goto error;
 	}
 
-	return 0;
+	return fd;
 
 error:
 	return -1;
@@ -97,6 +124,7 @@ static void *communicate_client(void *arg)
 	int connected_socket = *(int *)arg;
 	char filename[NAME_MAX];
 	uint64_t file_size;
+	int output_fd = -1;
 
 	pthread_detach(pthread_self());
 
@@ -110,7 +138,7 @@ static void *communicate_client(void *arg)
 		goto end;
 	}
 
-	if (open_output_file(filename)) {
+	if ((output_fd = open_output_file(filename)) == -1) {
 		terminate_session(connected_socket, "open_output_file");
 		debug_print("open_output_file error");
 		goto end;
@@ -121,11 +149,26 @@ static void *communicate_client(void *arg)
 		goto end;
 	}
 
+	if (recv_file(connected_socket, output_fd, file_size)) {
+		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			/* recvでタイムアウトになった */
+			prepare_break_connection(connected_socket);
+		} else {
+			terminate_session(connected_socket, "recv_file");
+		}
+		debug_print("recv_file error");
+		goto end;
+	}
 
-	// D受信
-	// close
+	if (reply_acknowledge(connected_socket)) {
+		debug_print("reply_acknowledge error");
+		goto end;
+	}
 
 end:
+	if (output_fd != -1) {
+		close(output_fd);
+	}
 	close(connected_socket);
 	return NULL;
 }

@@ -40,7 +40,7 @@ static int initialize_server_socket(const char *port)
 		}
 
 		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
-			debug_print("setsockopt %s", strerror(errno));
+			debug_perror("setsockopt");
 			goto end;
 		}
 
@@ -55,7 +55,7 @@ static int initialize_server_socket(const char *port)
 	}
 
 	if (listen(sock, SOMAXCONN) == -1) {
-		debug_print("listen %s", strerror(errno));
+		debug_perror("listen");
 		goto end;
 	}
 
@@ -92,7 +92,7 @@ static int s_accept(struct client_acceptor *self)
 	int client_socket;
 
 	if ((client_socket = accept(self->private_data->listening_socket, NULL, NULL)) == -1) {
-		debug_print("accept %s", strerror(errno));
+		debug_perror("accept");
 	}
 	return client_socket;
 }
