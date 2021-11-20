@@ -60,11 +60,11 @@ static int recv_file(int connected_socket, int output_fd, uint64_t send_file_siz
 	uint64_t total_recv_size = 0;
 
 	while ((recv_size = recv(connected_socket, buf, sizeof(buf), 0)) > 0) {
-		if ((n = write(output_fd, buf, recv_size)) == -1) {
+		if ((n = write(output_fd, buf, (size_t)recv_size)) == -1) {
 			debug_perror("write");
 			goto error;
 		}
-		total_recv_size += recv_size;
+		total_recv_size += (uint64_t)recv_size;
 	}
 	if (recv_size == -1) {
 		debug_perror("recv");

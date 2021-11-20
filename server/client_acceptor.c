@@ -110,6 +110,9 @@ int create_client_acceptor(struct client_acceptor **ca)
 	}
 
 	tca->private_data = tp;
+	tca->destruct = s_destruct;
+	tca->open_socket = s_open_socket;
+	tca->accept = s_accept;
 
 	*ca = tca;
 	return 0;

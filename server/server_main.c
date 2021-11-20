@@ -41,9 +41,11 @@ static int initialize_trans_data_server(struct trans_data_server_option *option)
 		goto error;
 	}
 
-	if (chdir(option->files_store_dir_path) == -1) {
-		debug_print("chdir error: %s", strerror(errno));
-		goto error;
+	if (option->files_store_dir_path[0] != '\0') {
+		if (chdir(option->files_store_dir_path) == -1) {
+			debug_print("chdir error: %s", strerror(errno));
+			goto error;
+		}
 	}
 	return 0;
 
@@ -88,7 +90,7 @@ static int parse_option(int argc, char *argv[], struct trans_data_server_option 
 		}
 	}
 
-	if (optind >= argc) {
+	if (optind < argc) {
 		goto end;
 	}
 
