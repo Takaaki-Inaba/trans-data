@@ -7,14 +7,9 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#include "client_acceptor.h"
 #include "../common/debug.h"
 
-typedef struct client_acceptor_private_t {
-	int listening_socket;
-} CLIENT_ACCEPTOR_PRIVATE;
-
-static int initialize_server_socket(const char *port)
+int open_server_socket(const char *port)
 {
 	int sock = -1, optval, err = -1;
 	struct addrinfo hints, *result = NULL, *rp = NULL;
@@ -72,57 +67,8 @@ end:
 	return sock;
 }
 
-
-static void s_destruct(struct client_acceptor *self)
+int close_server_socket(int server_socket)
 {
-	free(self->private_data);
-	free(self);
+	return close(server_socket);
 }
 
-static int s_open_socket(struct client_acceptor *self, const char *port)
-{
-	if ((self->private_data->listening_socket = initialize_server_socket(port)) == -1) {
-		return -1;
-	}
-	return 0;
-}
-
-static int s_accept(struct client_acceptor *self)
-{
-	int client_socket;
-
-	if ((client_socket = accept(self->private_data->listening_socket, NULL, NULL)) == -1) {
-		debug_perror("accept");
-	}
-	return client_socket;
-}
-
-int create_client_acceptor(struct client_acceptor **ca)
-{
-	struct client_acceptor *tca = NULL;
-	CLIENT_ACCEPTOR_PRIVATE *tp = NULL;
-
-	if ((tca = calloc(1, sizeof(struct client_acceptor))) == NULL) {
-		goto error;
-	}
-	if ((tp = calloc(1, sizeof(CLIENT_ACCEPTOR_PRIVATE))) == NULL) {
-		goto error;
-	}
-
-	tca->private_data = tp;
-	tca->destruct = s_destruct;
-	tca->open_socket = s_open_socket;
-	tca->accept = s_accept;
-
-	*ca = tca;
-	return 0;
-
-error:
-	if (tp) {
-		free(tp);
-	}
-	if (tca) {
-		free(tca);
-	}
-	return -1;
-}

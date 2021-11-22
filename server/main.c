@@ -2,5 +2,5 @@
 
 int main(int argc, char *argv[])
 {
-	return trans_data_server_main(argc, argv);
+	return server_main(argc, argv);
 }

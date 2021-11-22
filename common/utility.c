@@ -4,13 +4,18 @@
 
 #include "debug.h"
 
-int set_recv_timeout(int sock, int timeout_sec)
+int set_socket_timeout(int sock, int timeout_sec)
 {
-	struct timeval recv_timeout;
+	struct timeval timeout;
 
-	recv_timeout.tv_sec = (time_t)timeout_sec;
-	recv_timeout.tv_usec = 0;
-	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &recv_timeout, sizeof(recv_timeout)) == -1) {
+	timeout.tv_sec = (time_t)timeout_sec;
+	timeout.tv_usec = 0;
+	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) == -1) {
+		debug_perror("setsockopt");
+		return -1;
+	}
+
+	if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) == -1) {
 		debug_perror("setsockopt");
 		return -1;
 	}

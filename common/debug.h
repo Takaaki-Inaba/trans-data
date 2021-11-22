@@ -15,11 +15,11 @@
                 }                                                    \
         } while (0)
 
-#define debug_perror(syscall_name)                                   \
+#define debug_perror(func)                                           \
 	do {                                                         \
 		char tmp[256];                                       \
 		strerror_r(errno, tmp, sizeof(tmp));                 \
-		debug_print("%s error: %s", #syscall_name, tmp);     \
+		debug_print("%s error: %s", #func, tmp);             \
 	} while (0)
 
 /**
