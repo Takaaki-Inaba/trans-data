@@ -110,16 +110,17 @@ error:
 
 static void close_output_file(server_session_t *session)
 {
-	if (session->output_fd == -1) {
-		return;
-	}
-	close(session->output_fd);
-	session->output_fd = -1;
-	close(session->lock_fd);
-	session->lock_fd = -1;
+	if (session->lock_fd != -1) {
+		close(session->lock_fd);
+		session->lock_fd = -1;
 
-	if (unlink(session->lock_filename) == -1) {
-		debug_perror("unlink lock file");
+		if (unlink(session->lock_filename) == -1) {
+			debug_perror("unlink lock file");
+		}
+	}
+	if (session->output_fd != -1) {
+		close(session->output_fd);
+		session->output_fd = -1;
 	}
 }
 
