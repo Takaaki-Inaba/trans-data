@@ -76,7 +76,6 @@ static int recv_acknowledge(client_session_t *session, enum response_type *resp)
 	return 0;
 
 error:
-	prepare_break_connection(session->connected_socket);
 	return -1;
 }
 
