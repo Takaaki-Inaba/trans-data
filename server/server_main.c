@@ -24,9 +24,15 @@ struct command_line_option {
 
 static int initialize_server(struct command_line_option *option)
 {
+	/* if (daemon(1, 0) == -1) { */
+	/* 	debug_perror("daemon"); */
+	/* 	goto error; */
+	/* } */
+
 	if (option->enable_debug) {
 		char log_filename[FILENAME_MAX];
-		snprintf(log_filename, sizeof(log_filename), "trans-data-server.%d", getpid());
+		/* snprintf(log_filename, sizeof(log_filename), "trans-data-server.%d", getpid()); */
+		snprintf(log_filename, sizeof(log_filename), "/dev/stderr");
 		if (debug_initialize(log_filename)) {
 			goto error;
 		}
@@ -37,14 +43,9 @@ static int initialize_server(struct command_line_option *option)
 	 * TODO: その他のシグナルの扱いをどうするかを仕様含め検討 */
 	signal(SIGPIPE, SIG_IGN);
 
-	if (daemon(1, 0) == -1) {
-		debug_print("daemon error: %s", strerror(errno));
-		goto error;
-	}
-
 	if (option->files_store_dir_path[0] != '\0') {
 		if (chdir(option->files_store_dir_path) == -1) {
-			debug_print("chdir error: %s", strerror(errno));
+			debug_perror("chdir");
 			goto error;
 		}
 	}
@@ -102,7 +103,7 @@ end:
 
 int server_main(int argc, char *argv[])
 {
-	struct command_line_option option = { 0 };
+	struct command_line_option option = {{ 0 }};
 	int server_socket = -1;
 
 	if (parse_option(argc, argv, &option) || validate_option(&option)) {

@@ -68,11 +68,13 @@ int debug_initialize(const char *log_filename)
 	if ((g_log_file_ptr = fopen(log_filename, "a")) == NULL) {
 		return -1;
 	}
+	g_debug_mode = DEBUG_ON;
 	return 0;
 }
 
 /** デバッグ終了処理 */
 void debug_finalize()
 {
+	g_debug_mode = DEBUG_OFF;
 	fclose(g_log_file_ptr);
 }

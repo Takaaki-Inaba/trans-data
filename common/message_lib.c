@@ -59,7 +59,7 @@ int recv_message_E(int sock, struct message_E *msg_buf)
 		debug_perror("recv");
 		goto error;
 	}
-	if (msg_buf->message_type != MESSAGE_TYPE_F) {
+	if (msg_buf->message_type != MESSAGE_TYPE_E) {
 		goto error;
 	}
 	if (recv(sock, msg_buf->error_message, sizeof(msg_buf->error_message), MSG_WAITALL) == -1) {
@@ -80,7 +80,15 @@ int send_message_F(int sock, const char *filename, uint64_t file_size)
 	msg.file_size = htobe64(file_size);
 	snprintf(msg.filename, sizeof(msg.filename), "%s", filename);
 
-	if (send(sock, &msg, sizeof(msg), 0) == -1) {
+	if (send(sock, &msg.message_type, sizeof(msg.message_type), 0) == -1) {
+		debug_perror("send");
+		goto error;
+	}
+	if (send(sock, &msg.file_size, sizeof(msg.file_size), 0) == -1) {
+		debug_perror("send");
+		goto error;
+	}
+	if (send(sock, &msg.filename, sizeof(msg.filename), 0) == -1) {
 		debug_perror("send");
 		goto error;
 	}
@@ -111,7 +119,11 @@ int send_message_E(int sock, const char *error_message)
 
 	msg.message_type = MESSAGE_TYPE_E;
 	snprintf(msg.error_message, sizeof(msg.error_message), "%s", error_message);
-	if (send(sock, &msg, sizeof(msg), 0) == -1) {
+	if (send(sock, &msg.message_type, sizeof(msg.message_type), 0) == -1) {
+		debug_perror("send");
+		return -1;
+	}
+	if (send(sock, &msg.error_message, sizeof(msg.error_message), 0) == -1) {
 		debug_perror("send");
 		return -1;
 	}

@@ -16,6 +16,8 @@
 typedef struct server_session {
 	int connected_socket;
 	int output_fd;
+	int lock_fd;
+	char lock_filename[NAME_MAX];
 	uint64_t send_file_size;
 	char *filename;
 } server_session_t;
@@ -35,7 +37,7 @@ static int terminate_session(int connected_socket, const char *message)
 
 	/* clientからのcloseを待つ */
 	if (recv(connected_socket, &dummy, sizeof(dummy), 0) == -1) {
-		debug_print("EOF read error");
+		debug_perror("EOF read error");
 		goto error;
 	}
 
@@ -84,31 +86,38 @@ error:
 
 static int open_output_file(server_session_t *session)
 {
-	if ((session->output_fd = open(session->filename, O_WRONLY | O_CREAT, S_IRWXU | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)) == -1) {
-		debug_perror("open");
+	snprintf(session->lock_filename, sizeof(session->lock_filename), ".%s.lock", session->filename);
+
+	if ((session->lock_fd = open(session->lock_filename, O_WRONLY | O_CREAT | O_EXCL, S_IRWXU)) == -1) {
+		debug_perror("lock file open");
 		goto error;
 	}
 
-	if (lockf(session->output_fd, F_TLOCK, 0) == -1) {
-		debug_perror("lockf");
+	if ((session->output_fd = open(session->filename, O_WRONLY | O_CREAT, S_IRWXU | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)) == -1) {
+		debug_perror("open");
 		goto error;
 	}
 
 	return 0;
 
 error:
-	terminate_session(session->connected_socket, "open_output_file");
+	terminate_session(session->connected_socket, "output file open or file lock error");
 	return -1;
 }
 
-static int close_output_file(server_session_t *session)
+static void close_output_file(server_session_t *session)
 {
-	if (lockf(session->output_fd, F_ULOCK, 0) == -1) {
-		debug_perror("lockf");
+	if (session->output_fd == -1) {
+		return;
 	}
-
 	close(session->output_fd);
-	return 0;
+	session->output_fd = -1;
+	close(session->lock_fd);
+	session->lock_fd = -1;
+
+	if (unlink(session->lock_filename) == -1) {
+		debug_perror("unlink lock file");
+	}
 }
 
 server_session_t *create_session(int connected_socket)
@@ -120,6 +129,7 @@ server_session_t *create_session(int connected_socket)
 		return NULL;
 	}
 	session->connected_socket = connected_socket;
+	session->output_fd = -1;
 	return session;
 }
 
@@ -143,6 +153,7 @@ int begin_session(server_session_t *session)
 	return 0;
 
 error:
+	close_output_file(session);
 	return -1;
 
 }

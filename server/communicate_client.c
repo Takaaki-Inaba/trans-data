@@ -17,7 +17,7 @@
 static void *communicate_client(void *arg)
 {
 	int connected_socket = *(int *)arg;
-	server_session_t *session;
+	server_session_t *session = NULL;
 
 	pthread_detach(pthread_self());
 

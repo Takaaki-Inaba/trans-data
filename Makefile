@@ -30,7 +30,7 @@ $(BIN_DIR):
 
 .PHONY: clean
 clean:
-	rm -r $(BIN_DIR)
+	rm -rf $(BIN_DIR)
 	rm $(CM_OBJS)
 	rm $(SV_OBJS)
 	rm $(CL_OBJS)
