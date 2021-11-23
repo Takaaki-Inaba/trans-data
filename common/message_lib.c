@@ -12,122 +12,184 @@
 
 int recv_message_F(int sock, struct message_F *msg_buf)
 {
-	uint64_t file_size_nb;
+	uint64_t fsize;
+	char *buf = NULL, *p;
+	int ret = -1;
 
-	if (recv(sock, &msg_buf->message_type, sizeof(msg_buf->message_type), MSG_WAITALL) == -1) {
-		debug_perror("recv");
-		goto error;
+	if ((buf = calloc(1, MESSAGE_TYPE_F_LENGTH)) == NULL) {
+		debug_perror("calloc");
+		goto end;
 	}
+
+	if (recv(sock, buf, MESSAGE_TYPE_F_LENGTH, MSG_WAITALL) == -1) {
+		debug_perror("recv");
+		goto end;
+	}
+
+	p = buf;
+	msg_buf->message_type = *p;
+	p += sizeof(msg_buf->message_type);
 	if (msg_buf->message_type != MESSAGE_TYPE_F) {
-		goto error;
+		goto end;
 	}
+	memcpy(&fsize, p, sizeof(fsize));
+	p += sizeof(fsize);
+	msg_buf->file_size = be64toh(fsize);
+	memcpy(msg_buf->filename, p, sizeof(msg_buf->filename));
 
-	if (recv(sock, &file_size_nb, sizeof(file_size_nb), MSG_WAITALL) == -1) {
-		debug_perror("recv");
-		goto error;
+	ret = 0;
+end:
+	if (buf) {
+		free(buf);
 	}
-	msg_buf->file_size = be64toh(file_size_nb);
-
-	if (recv(sock, msg_buf->filename, sizeof(msg_buf->filename), MSG_WAITALL) == -1) {
-		debug_perror("recv");
-		goto error;
-	}
-	return 0;
-
-error:
-	return -1;
+	return ret;
 }
 
 int recv_message_A(int sock, struct message_A *msg_buf)
 {
-	if (recv(sock, &msg_buf->message_type, sizeof(msg_buf->message_type), MSG_WAITALL) == -1) {
-		debug_perror("recv");
-		goto error;
-	}
-	if (msg_buf->message_type != MESSAGE_TYPE_A) {
-		goto error;
-	}
-	return 0;
+	char *buf = NULL, *p;
+	int ret = -1;
 
-error:
-	return -1;
+	if ((buf = calloc(1, MESSAGE_TYPE_A_LENGTH)) == NULL) {
+		debug_perror("calloc");
+		goto end;
+	}
+
+	if (recv(sock, buf, MESSAGE_TYPE_A_LENGTH, MSG_WAITALL) == -1) {
+		debug_perror("recv");
+		goto end;
+	}
+
+	p = buf;
+	msg_buf->message_type = *p;
+	if (msg_buf->message_type != MESSAGE_TYPE_A) {
+		goto end;
+	}
+
+	ret = 0;
+end:
+	if (buf) {
+		free(buf);
+	}
+	return ret;
 }
 
 int recv_message_E(int sock, struct message_E *msg_buf)
 {
-	if (recv(sock, &msg_buf->message_type, sizeof(msg_buf->message_type), MSG_WAITALL) == -1) {
-		debug_perror("recv");
-		goto error;
-	}
-	if (msg_buf->message_type != MESSAGE_TYPE_E) {
-		goto error;
-	}
-	if (recv(sock, msg_buf->error_message, sizeof(msg_buf->error_message), MSG_WAITALL) == -1) {
-		debug_perror("recv");
-		goto error;
-	}
-	return 0;
+	char *buf = NULL, *p;
+	int ret = -1;
 
-error:
-	return -1;
+	if ((buf = calloc(1, MESSAGE_TYPE_E_LENGTH)) == NULL) {
+		debug_perror("calloc");
+		goto end;
+	}
+
+	if (recv(sock, buf, MESSAGE_TYPE_E_LENGTH, MSG_WAITALL) == -1) {
+		debug_perror("recv");
+		goto end;
+	}
+
+	p = buf;
+	msg_buf->message_type = *p;
+	p += sizeof(msg_buf->message_type);
+	if (msg_buf->message_type != MESSAGE_TYPE_E) {
+		goto end;
+	}
+	memcpy(msg_buf->error_message, p, ERROR_MESSAGE_LENGTH);
+
+	ret = 0;
+end:
+	if (buf) {
+		free(buf);
+	}
+	return ret;
 }
 
 int send_message_F(int sock, const char *filename, uint64_t file_size)
 {
-	struct message_F msg = { 0 };
+	uint64_t fsize;
+	char *buf = NULL, *p;
+	int ret = -1;
 
-	msg.message_type = MESSAGE_TYPE_F;
-	msg.file_size = htobe64(file_size);
-	snprintf(msg.filename, sizeof(msg.filename), "%s", filename);
-
-	if (send(sock, &msg.message_type, sizeof(msg.message_type), 0) == -1) {
-		debug_perror("send");
-		goto error;
-	}
-	if (send(sock, &msg.file_size, sizeof(msg.file_size), 0) == -1) {
-		debug_perror("send");
-		goto error;
-	}
-	if (send(sock, &msg.filename, sizeof(msg.filename), 0) == -1) {
-		debug_perror("send");
-		goto error;
+	if ((buf = calloc(1, MESSAGE_TYPE_F_LENGTH)) == NULL) {
+		debug_perror("calloc");
+		goto end;
 	}
 
-	return 0;
+	p = buf;
+	*p = MESSAGE_TYPE_F;
+	p += sizeof(char);
 
-error:
-	return -1;
+	fsize = htobe64(file_size);
+	memcpy(p, &fsize, sizeof(uint64_t));
+	p += sizeof(uint64_t);
+
+	memcpy(p, filename, FILE_NAME_MAX);
+
+	if (send(sock, buf, MESSAGE_TYPE_F_LENGTH, 0) == -1) {
+		debug_perror("send");
+		goto end;
+	}
+
+	ret = 0;
+end:
+	if (buf) {
+		free(buf);
+	}
+	return ret;
 }
 
 int send_message_A(int sock)
 {
-	struct message_A msg = { 0 };
+	char *buf = NULL, *p;
+	int ret = -1;
 
-	msg.message_type = MESSAGE_TYPE_A;
-	if (send(sock, &msg, sizeof(msg), 0) == -1) {
-		debug_perror("send");
-		return -1;
+	if ((buf = calloc(1, MESSAGE_TYPE_A_LENGTH)) == NULL) {
+		debug_perror("calloc");
+		goto end;
 	}
 
-	return 0;
+	p = buf;
+	*p = MESSAGE_TYPE_A;
 
+	if (send(sock, buf, MESSAGE_TYPE_A_LENGTH, 0) == -1) {
+		debug_perror("send");
+		goto end;
+	}
+
+	ret = 0;
+end:
+	if (buf) {
+		free(buf);
+	}
+	return ret;
 }
 
 int send_message_E(int sock, const char *error_message)
 {
-	struct message_E msg = { 0 };
+	char *buf = NULL, *p;
+	int ret = -1;
 
-	msg.message_type = MESSAGE_TYPE_E;
-	snprintf(msg.error_message, sizeof(msg.error_message), "%s", error_message);
-	if (send(sock, &msg.message_type, sizeof(msg.message_type), 0) == -1) {
-		debug_perror("send");
-		return -1;
-	}
-	if (send(sock, &msg.error_message, sizeof(msg.error_message), 0) == -1) {
-		debug_perror("send");
-		return -1;
+	if ((buf = calloc(1, MESSAGE_TYPE_E_LENGTH)) == NULL) {
+		debug_perror("calloc");
+		goto end;
 	}
 
-	return 0;
+	p = buf;
+	*p = MESSAGE_TYPE_E;
+	p += sizeof(char);
 
+	snprintf(p, ERROR_MESSAGE_LENGTH, "%s", error_message);
+
+	if (send(sock, buf, MESSAGE_TYPE_E_LENGTH, 0) == -1) {
+		debug_perror("send");
+		goto end;
+	}
+
+	ret = 0;
+end:
+	if (buf) {
+		free(buf);
+	}
+	return ret;
 }

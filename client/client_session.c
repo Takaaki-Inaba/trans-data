@@ -57,7 +57,7 @@ static int recv_acknowledge(client_session_t *session, enum response_type *resp)
 		}
 		*resp = RESPONSE_OK;
 	} else if (message_type == MESSAGE_TYPE_E) {
-		struct message_E msg_E;
+		struct message_E msg_E = { 0 };
 
 		if (recv_message_E(session->connected_socket, &msg_E)) {
 			debug_print("recv_message_E");
