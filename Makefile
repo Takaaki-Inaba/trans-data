@@ -31,7 +31,7 @@ $(BIN_DIR):
 .PHONY: clean
 clean:
 	rm -rf $(BIN_DIR)
-	rm $(CM_OBJS)
-	rm $(SV_OBJS)
-	rm $(CL_OBJS)
+	rm -f $(CM_OBJS)
+	rm -f $(SV_OBJS)
+	rm -f $(CL_OBJS)
 
