@@ -3,7 +3,7 @@
 #include "client_session.h"
 #include "../common/debug.h"
 
-int start_communicate_server(int connected_socket, const char *send_file_path)
+static int communicate_server(int connected_socket, const char *send_file_path)
 {
 	int ret = -1;
 	client_session_t *session;
@@ -17,8 +17,8 @@ int start_communicate_server(int connected_socket, const char *send_file_path)
 		goto end;
 	}
 
-	if (send_file_session(session)) {
-		debug_print("send_file_session error: %s", strerror_session(session));
+	if (put_session(session)) {
+		debug_print("put_session error: %s", strerror_session(session));
 		goto end;
 	}
 
@@ -28,4 +28,10 @@ end:
 		destruct_session(session);
 	}
 	return ret;
+}
+
+
+int start_communicate_server(int connected_socket, const char *send_file_path)
+{
+	return communicate_server(connected_socket, send_file_path);
 }

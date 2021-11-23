@@ -164,7 +164,7 @@ error:
 }
 
 /** ファイルデータを受信し、出力ファイルに書き込み */
-int recv_file_session(server_session_t *session)
+int put_session(server_session_t *session)
 {
 	char buf[BUFSIZ];
 	ssize_t recv_size, n;

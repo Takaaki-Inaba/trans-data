@@ -39,8 +39,8 @@ static void *communicate_client(void *arg)
 		goto end;
 	}
 
-	if (recv_file_session(session)) {
-		debug_print("recv_file_session");
+	if (put_session(session)) {
+		debug_print("put_session");
 		goto end;
 	}
 

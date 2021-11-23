@@ -119,7 +119,7 @@ error:
 	return -1;
 }
 
-int send_file_session(client_session_t *session)
+int put_session(client_session_t *session)
 {
 	int fd = -1;
 	enum response_type resp;
