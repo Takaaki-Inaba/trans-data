@@ -19,7 +19,7 @@
 	do {                                                         \
 		char tmp[256];                                       \
 		strerror_r(errno, tmp, sizeof(tmp));                 \
-		debug_print("%s error: %s", #func, tmp);             \
+		debug_print("%s error: %s", func, tmp);              \
 	} while (0)
 
 /**

@@ -88,6 +88,9 @@ static int open_output_file(server_session_t *session)
 {
 	snprintf(session->lock_filename, sizeof(session->lock_filename), ".%s.lock", session->filename);
 
+	/* ロックファイルをO_EXCLで作成することで複数スレッドが同時に同じファイル名のデータを
+	 * 送信してきたときに発生するデータ破壊を防止。
+	 * TODO: このやり方はNFS環境で動作しないため、別の方法で実装し直す*/
 	if ((session->lock_fd = open(session->lock_filename, O_WRONLY | O_CREAT | O_EXCL, S_IRWXU)) == -1) {
 		debug_perror("lock file open");
 		goto error;
@@ -140,11 +143,13 @@ int begin_session(server_session_t *session)
 		goto error;
 	}
 
+	/* 出力ファイルオープンとロックファイル作成 */
 	if (open_output_file(session)) {
 		debug_print("open_output_file error");
 		goto error;
 	}
 
+	/* 正常応答をクライアントに返答 */
 	if (send_acknowledge(session)) {
 		debug_print("send_acknowledge error");
 		goto error;
@@ -158,6 +163,7 @@ error:
 
 }
 
+/** ファイルデータを受信し、出力ファイルに書き込み */
 int recv_file_session(server_session_t *session)
 {
 	char buf[BUFSIZ];
@@ -178,6 +184,8 @@ int recv_file_session(server_session_t *session)
 		prepare_break_connection(session->connected_socket);
 		goto end;
 	}
+
+	/* F電文で送られてきた送信ファイルサイズと実際に受信できたファイルサイズが異なる */
 	if (total_recv_size != session->send_file_size) {
 		debug_print("send file size %lld but receive file size %lld", session->send_file_size, total_recv_size);
 		terminate_session(session->connected_socket, "send file size not equal receive data size");

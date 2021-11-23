@@ -9,6 +9,7 @@
 
 #include "../common/debug.h"
 
+/** リスニングソケットを作成 */
 int open_server_socket(const char *port)
 {
 	int sock = -1, optval, err = -1;

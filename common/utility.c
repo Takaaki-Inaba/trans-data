@@ -22,6 +22,9 @@ int set_socket_timeout(int sock, int timeout_sec)
 	return 0;
 }
 
+/** ソケットの強制切断準備.
+ * タイムアウトが発生するなど処理の継続が難しい場合は、peerにRSTパケットを送信することで
+ * ソケットを強制切断する */
 int prepare_break_connection(int sock)
 {
 	struct linger l;

@@ -1,5 +1,5 @@
 CC	= gcc
-CFLAGS	= -Wall -Wconversion -g
+CFLAGS	= -Wall -Wconversion -g 
 LIBS = -lpthread
 
 CM_DIR = common

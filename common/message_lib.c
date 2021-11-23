@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <sys/stat.h>
 
 #include "debug.h"
 #include "message_lib.h"

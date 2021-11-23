@@ -60,6 +60,7 @@ void debug_print_internal(const char *format, ...)
 		tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec,
 		(unsigned long)pthread_self(), g_filename, g_line_number);
 	fprintf(g_log_file_ptr, "%*s %s\n", -DEBUG_LOG_HEADER_LENGTH, header, message);
+	fflush(g_log_file_ptr);
 }
 
 /** デバッグ初期化処理. */

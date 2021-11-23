@@ -14,6 +14,7 @@
 #include "../common/utility.h"
 #include "../common/constant.h"
 
+/** クライアントと通信するスレッドのメイン */
 static void *communicate_client(void *arg)
 {
 	int connected_socket = *(int *)arg;
@@ -21,6 +22,8 @@ static void *communicate_client(void *arg)
 
 	pthread_detach(pthread_self());
 
+	/* ソケットタイムアウトをセット
+	 * TODO: タイムアウト値は外部ファイルから読み込むように変更*/
 	if (set_socket_timeout(connected_socket, SOCKET_TIMEOUT_SEC)) {
 		debug_print("set_socket_timeout error");
 		goto end;

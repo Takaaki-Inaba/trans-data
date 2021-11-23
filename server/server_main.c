@@ -24,23 +24,20 @@ struct command_line_option {
 
 static int initialize_server(struct command_line_option *option)
 {
-	/* if (daemon(1, 0) == -1) { */
-	/* 	debug_perror("daemon"); */
-	/* 	goto error; */
-	/* } */
+	if (daemon(1, 0) == -1) {
+		debug_perror("daemon");
+		goto error;
+	}
 
 	if (option->enable_debug) {
-		char log_filename[FILENAME_MAX];
-		/* snprintf(log_filename, sizeof(log_filename), "trans-data-server.%d", getpid()); */
-		snprintf(log_filename, sizeof(log_filename), "/dev/stderr");
+		char log_filename[NAME_MAX];
+		snprintf(log_filename, sizeof(log_filename), "trans-data-server.%d", getpid());
 		if (debug_initialize(log_filename)) {
 			goto error;
 		}
 		atexit(debug_finalize);
 	}
 
-	/* closed socketへのwriteで発生するSIGPIPEを無視する
-	 * TODO: その他のシグナルの扱いをどうするかを仕様含め検討 */
 	signal(SIGPIPE, SIG_IGN);
 
 	if (option->files_store_dir_path[0] != '\0') {

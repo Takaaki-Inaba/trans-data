@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
@@ -7,7 +8,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <sys/sendfile.h>
 
 #include "client_session.h"
 #include "../common/debug.h"
@@ -123,15 +123,27 @@ int send_file_session(client_session_t *session)
 {
 	int fd = -1;
 	enum response_type resp;
+	char buf[BUFSIZ];
+	ssize_t read_byte;
 
 	if ((fd = open(session->send_file_path, O_RDONLY)) == -1) {
+		debug_perror("open");
 		goto error;
 	}
 
-	if (sendfile(session->connected_socket, fd, NULL, session->send_file_size) == -1) {
+	while ((read_byte = read(fd, buf, sizeof(buf))) > 0) {
+		if (send(session->connected_socket, buf, (size_t)read_byte, 0) == -1) {
+			debug_perror("send");
+			goto error;
+		}
+	}
+	if (read_byte == -1) {
+		debug_perror("read");
 		goto error;
 	}
+
 	if (shutdown(session->connected_socket, SHUT_WR) == -1) {
+		debug_perror("shutdown");
 		goto error;
 	}
 
