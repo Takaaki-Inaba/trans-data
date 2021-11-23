@@ -133,6 +133,7 @@ server_session_t *create_session(int connected_socket)
 	}
 	session->connected_socket = connected_socket;
 	session->output_fd = -1;
+	session->lock_fd = -1;
 	return session;
 }
 
