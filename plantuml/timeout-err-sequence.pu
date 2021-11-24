@@ -1,4 +1,4 @@
-@startuml put sessionのAメッセージがロスした場合
+@startuml timeout-err-sequence
 
 participant "送信ファイル" as sendfile
 participant "Client" as cl

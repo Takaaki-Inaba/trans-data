@@ -1,4 +1,4 @@
-@startuml データサイズ検証エラー
+@startuml put-err-sequence
 
 participant "送信ファイル" as sendfile
 participant "Client" as cl

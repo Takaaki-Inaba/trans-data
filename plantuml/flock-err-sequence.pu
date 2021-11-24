@@ -1,4 +1,4 @@
-@startuml ファイルロック取得エラー
+@startuml file-lock-err-sequence
 
 participant "Client" as cl
 participant "Server" as sv

@@ -1,4 +1,4 @@
-@startuml 正常系
+@startuml file-transfer-sequence
 
 participant "送信ファイル" as sendfile
 participant "Client" as cl
