@@ -1,0 +1,43 @@
+@startuml put sessionのAメッセージがロスした場合
+
+participant "送信ファイル" as sendfile
+participant "Client" as cl
+participant "Server" as sv
+participant "受信ファイル" as recvfile
+participant "ロックファイル" as lockfile
+
+cl -> sv: connect
+
+group begin session
+        cl -> sv: Fメッセージ送信
+        sv -> lockfile: open(O_EXCL)
+        sv -> recvfile: open
+        sv -> cl: Aメッセージ送信
+end
+
+group put session
+        cl -> sendfile: open
+
+        loop 0, 送信ファイルサイズ
+                sendfile -> cl: read
+                cl -> sv: send
+                sv -> recvfile: write
+        end
+
+        cl -> sv: shutdown(SHUT_WR)
+        sv -> sv: データサイズ検証
+        sv ->x cl: Aメッセージ送信\nが遅れる
+        cl -> cl: タイムアウト検知
+        cl -> cl: RSTパケット送信準備
+
+        cl -> sendfile: close
+end
+
+cl -> sv: RSTパケット送信
+sv -> sv: ソケット切断検知
+sv -> sv: RSTパケット送信準備
+sv -> recvfile: close
+sv -> lockfile: remove
+sv -> cl: RSTパケット送信
+
+@enduml

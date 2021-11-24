@@ -1,0 +1,19 @@
+@startuml ファイルロック取得エラー
+
+participant "Client" as cl
+participant "Server" as sv
+participant "受信ファイル" as recvfile
+participant "ロックファイル" as lockfile
+
+cl -> sv: connect
+
+group begin session
+        cl -> sv: Fメッセージ送信
+        sv -> lockfile: open(O_EXCL) エラー
+        sv -> cl: Eメッセージ送信
+end
+
+cl -> sv: close
+sv -> cl:
+
+@enduml

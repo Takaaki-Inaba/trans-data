@@ -1,0 +1,39 @@
+@startuml 正常系
+
+participant "送信ファイル" as sendfile
+participant "Client" as cl
+participant "Server" as sv
+participant "受信ファイル" as recvfile
+participant "ロックファイル" as lockfile
+
+cl -> sv: connect
+
+group begin session
+        cl -> sv: Fメッセージ送信
+        sv -> lockfile: open(O_EXCL)
+        sv -> recvfile: open
+        sv -> cl: Aメッセージ送信
+end
+
+group put session
+        cl -> sendfile: open
+
+        loop 0, 送信ファイルサイズ
+                sendfile -> cl: read
+                cl -> sv: send
+                sv -> recvfile: write
+        end
+
+        cl -> sv: shutdown(SHUT_WR)
+        sv -> sv: データサイズ検証
+        sv -> cl: Aメッセージ送信
+        cl -> sendfile: close
+
+        sv -> recvfile: close
+        sv -> lockfile: remove
+end
+
+cl -> sv: close
+sv -> cl:
+
+@enduml
