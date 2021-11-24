@@ -89,8 +89,7 @@ static int open_output_file(server_session_t *session)
 	snprintf(session->lock_filename, sizeof(session->lock_filename), ".%s.lock", session->filename);
 
 	/* ロックファイルをO_EXCLで作成することで複数スレッドが同時に同じファイル名のデータを
-	 * 送信してきたときに発生するデータ破壊を防止。
-	 * TODO: このやり方はNFS環境で動作しないため、別の方法で実装し直す*/
+	 * 送信してきたときに発生するデータ破壊を防止*/
 	if ((session->lock_fd = open(session->lock_filename, O_WRONLY | O_CREAT | O_EXCL, S_IRWXU)) == -1) {
 		debug_perror("lock file open");
 		goto error;
