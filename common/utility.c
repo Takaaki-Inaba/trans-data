@@ -38,3 +38,21 @@ int prepare_break_connection(int sock)
 	}
 	return 0;
 }
+
+ssize_t send_all(int sock, const void *buf, size_t len, int flags)
+{
+	size_t total_sent = 0;
+	const char *p = (const char *)buf;
+
+	while (total_sent < len) {
+		ssize_t sent;
+
+		if ((sent = send(sock, p + total_sent, len - total_sent, flags)) < 0) {
+			return -1;
+		}
+		total_sent += (size_t)sent;
+	}
+
+	return (ssize_t)total_sent;
+}
+

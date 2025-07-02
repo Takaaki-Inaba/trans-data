@@ -131,7 +131,7 @@ int put_session(client_session_t *session)
 	}
 
 	while ((read_byte = read(fd, buf, sizeof(buf))) > 0) {
-		if (send(session->connected_socket, buf, (size_t)read_byte, 0) == -1) {
+		if (send_all(session->connected_socket, buf, (size_t)read_byte, 0) == -1) {
 			debug_perror("send");
 			goto error;
 		}

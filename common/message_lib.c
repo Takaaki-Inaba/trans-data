@@ -8,6 +8,7 @@
 
 #include "debug.h"
 #include "message_lib.h"
+#include "utility.h"
 
 int recv_message_F(int sock, struct message_F *msg_buf)
 {
@@ -125,7 +126,7 @@ int send_message_F(int sock, const char *filename, uint64_t file_size)
 
 	memcpy(p, filename, FILE_NAME_MAX);
 
-	if (send(sock, buf, MESSAGE_TYPE_F_LENGTH, 0) == -1) {
+	if (send_all(sock, buf, MESSAGE_TYPE_F_LENGTH, 0) == -1) {
 		debug_perror("send");
 		goto end;
 	}
@@ -151,7 +152,7 @@ int send_message_A(int sock)
 	p = buf;
 	*p = MESSAGE_TYPE_A;
 
-	if (send(sock, buf, MESSAGE_TYPE_A_LENGTH, 0) == -1) {
+	if (send_all(sock, buf, MESSAGE_TYPE_A_LENGTH, 0) == -1) {
 		debug_perror("send");
 		goto end;
 	}
@@ -180,7 +181,7 @@ int send_message_E(int sock, const char *error_message)
 
 	snprintf(p, ERROR_MESSAGE_LENGTH, "%s", error_message);
 
-	if (send(sock, buf, MESSAGE_TYPE_E_LENGTH, 0) == -1) {
+	if (send_all(sock, buf, MESSAGE_TYPE_E_LENGTH, 0) == -1) {
 		debug_perror("send");
 		goto end;
 	}

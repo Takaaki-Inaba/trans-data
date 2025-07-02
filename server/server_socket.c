@@ -30,8 +30,7 @@ int open_server_socket(const char *port)
 
 	optval = 1;
 	for (rp = result; rp != NULL; rp = rp->ai_next) {
-		sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-		if (sock == -1) {
+		if ((sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol)) == -1) {
 			continue;
 		}
 

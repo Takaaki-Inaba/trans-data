@@ -65,7 +65,6 @@ static void print_usage(void)
 	fprintf(stderr, "trans-data-server -p port [-s files-store-directory] [-d]\n");
 }
 
-/** 入力パラメータの解析 */
 static int parse_option(int argc, char *argv[], struct command_line_option *option)
 {
 	int opt, ret = -1;

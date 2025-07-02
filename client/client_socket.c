@@ -30,8 +30,6 @@ int open_client_socket(const char *hostname, const char *port_no, int timeout_se
 		goto end;
 	}
 
-	/* ソケットタイムアウトをセット
-	 * TODO: タイムアウト値は外部ファイルから読み込むように変更*/
 	if (set_socket_timeout(sock, SOCKET_TIMEOUT_SEC)) {
 		debug_print("set_socket_timeout error");
 		goto end;
